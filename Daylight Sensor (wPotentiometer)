@@ -1,0 +1,45 @@
+#include <Wire.h>
+#include <Adafruit_LiquidCrystal.h>
+
+const int ledPin = 13;
+const int ldrPin = A0;
+const int potPin = A1; //assigns pins
+
+Adafruit_LiquidCrystal lcd(0); //creates LCD object (0) corresponds to address of Display
+
+void setup() {
+  pinMode(ledPin, OUTPUT);
+  Serial.begin(9600);
+
+  lcd.begin(16, 2);
+  lcd.setBacklight(1);
+  lcd.clear(); //Defining Pin and starting up LCD
+}
+
+void loop() {
+  int ldrValue = analogRead(ldrPin);
+  int potValue = analogRead(potPin); //Read current light level and potentiometer threshold
+
+  Serial.print("LDR: ");
+  Serial.print(ldrValue);
+  Serial.print("  POT: ");
+  Serial.println(potValue); //Prints LCD values to monitor for debugging
+
+  if (ldrValue <= potValue) {
+    digitalWrite(ledPin, HIGH);
+  } else {
+    digitalWrite(ledPin, LOW); //Looks if light surpasses potentiometer threshold
+  }
+
+  lcd.setCursor(0, 0);
+  lcd.print("Light:");
+  lcd.print(ldrValue);
+  lcd.print("   "); // (0,0) Puts cursor at top and prints light value
+
+  lcd.setCursor(0, 1);
+  lcd.print("Set:");
+  lcd.print(potValue);
+  lcd.print("   ");// (0,1) second row prints Potentiometer values
+
+  delay(200);
+}
