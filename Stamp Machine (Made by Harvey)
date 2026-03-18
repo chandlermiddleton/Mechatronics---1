@@ -1,0 +1,120 @@
+// C++ code
+//
+
+
+const int SwitchPin = 4;
+const int UpPin = 3;
+const int DownPin = 2;
+const int SoundPin = 9;
+const int MotorPin = 11;
+
+int counter = 0;
+int UpState = 0;
+int lastUpState = 0;
+int DownState = 0;
+int lastDownState = 0;
+bool Stamping = false;
+
+char confirm;
+
+
+
+
+
+void setup()
+{
+  
+ Serial.begin(9600);
+  pinMode(SwitchPin, INPUT);
+  pinMode(UpPin, INPUT);
+  pinMode(DownPin, INPUT);
+  pinMode(SoundPin, INPUT);
+  pinMode(6, OUTPUT);
+  pinMode(5, OUTPUT);
+  pinMode(MotorPin, OUTPUT);
+}
+bool pswitchState;
+bool lastpswitchState;
+
+
+void loop()
+{
+ int Power = digitalRead(4);
+  if(Power==HIGH){
+    digitalWrite(6, HIGH);
+    digitalWrite(5, LOW);
+}
+  else{
+  digitalWrite(6, LOW);
+  digitalWrite(5, HIGH);
+    //Power indicator toggle
+}
+   pswitchState = Power;
+  if(pswitchState != lastpswitchState){
+  delay(300); // debounce
+
+    if (pswitchState == HIGH) {
+      Serial.println("POWER ON");
+      delay(1000);
+      Serial.println("Select number of Stamps  (enter c to confirm)");
+      delay(1000);
+    } 
+    else {
+      delay(300); 
+      Serial.println("POWER OFF");
+    }
+
+    lastpswitchState = pswitchState;
+}
+   UpState = digitalRead(UpPin);
+  // detect button press
+  if (UpState == HIGH && lastUpState == LOW && Power==HIGH && counter<10){
+    counter++;
+    Serial.print("Stamps: ");
+    Serial.print(counter);
+    Serial.println("/10");
+    tone(SoundPin, 600);
+        delay(30);
+    noTone(SoundPin);
+  }
+  lastUpState = UpState;
+DownState = digitalRead(DownPin);
+  // detect button press
+ if (DownState == HIGH && lastDownState == LOW && Power==HIGH && counter>0){
+    counter--;
+    Serial.print("Stamps: ");
+    Serial.print(counter);
+    Serial.println("/10");
+    tone(SoundPin, 600);
+        delay(30);
+    noTone(SoundPin);
+   }
+  lastDownState = DownState;
+if(Serial.available()>0){
+  confirm = Serial.read();
+}
+  if(confirm=='c' && counter!=0 && Power==HIGH){
+    Serial.println("Stamping..");
+    Stamping = !Stamping;
+    delay(1000);
+    
+  }
+  while(Stamping == true && counter>-1){
+      Serial.print(counter);
+      Serial.println("/10");
+      analogWrite(MotorPin, 249);
+      delay(1000);
+      counter--;
+    if(counter==0){
+     Stamping = false;
+      analogWrite(MotorPin, 0);
+      Serial.print(counter);
+      Serial.println("/10");
+      confirm='d';
+      Serial.println("Done");
+      delay(2000);
+      Serial.print("Select number of Stamps");
+    }
+  }
+}
+ 
