@@ -1,0 +1,89 @@
+#include <Servo.h>
+ 
+ 
+#define t4 7      //Entry Sensor
+#define t5 13     //Exit Sensor
+ 
+Servo myservo;
+ 
+int barrierState = 0;
+ 
+void setup() 
+{
+  Serial.begin(9600);
+ 
+  myservo.attach(6);
+  myservo.write(0);   // barrier closed
+}
+ 
+long readDistance(int triggerPin, int echoPin)
+{
+  pinMode(triggerPin, OUTPUT); 
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2);
+ 
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(triggerPin, LOW);
+ 
+  pinMode(echoPin, INPUT);
+  return pulseIn(echoPin, HIGH);
+}
+ 
+void loop()
+{
+  float d4 = 0.01723 * readDistance(t4, t4);
+  float d5 = 0.01723 * readDistance(t5, t5);
+ 
+  // barrier closed
+  if (barrierState == 0)
+  {
+    if (d4 < 100 && d5 >= 100)   // car entering
+    {
+      barrierState = -1;
+      myservo.write(90);   // open
+    }
+ 
+    if (d5 < 100 && d4 >= 100)   // car exiting
+    {
+      barrierState = 1;
+      myservo.write(90);   // open
+    }
+  }
+ 
+  // car entering
+  else if (barrierState == -1)
+  {
+    if (d4 >= 100 && d5 < 100)
+    {
+      barrierState = -2;
+      myservo.write(0);   // close
+    }
+  }
+ 
+  // car exiting
+  else if (barrierState == 1)
+  {
+    if (d5 >= 100 && d4 < 100)
+    {
+      barrierState = 2;
+      myservo.write(0);   // close
+    }
+  }
+ 
+  else if (barrierState == -2)
+  {
+    if (d5 >= 100)
+    {
+      barrierState = 0;
+    }
+  }
+ 
+  else if (barrierState == 2)
+  {
+    if (d4 >= 100)
+    {
+      barrierState = 0;
+    }
+  }
+}
