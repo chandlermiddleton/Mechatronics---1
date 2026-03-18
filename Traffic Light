@@ -1,0 +1,48 @@
+const int red = 8;
+const int yellow = 9;
+const int green = 10;
+const int button = 2; //creates named variables for arduino pins
+
+bool lastButton = LOW; //stores previous button state (assumes button wasnt pressed before program starts prevents the need to hold the button)
+
+void setup() {
+  pinMode(red, OUTPUT);
+  pinMode(yellow, OUTPUT);
+  pinMode(green, OUTPUT);
+  pinMode(button, INPUT); //All this detirmines wether pins are input or output
+
+  digitalWrite(green, HIGH);   // start on green
+}
+
+void runCycle() { //this is a reusable function we may call back on
+  // green -> yellow
+  digitalWrite(green, LOW);
+  digitalWrite(yellow, HIGH);
+  delay(2000);
+
+  // yellow -> red (walk)
+  digitalWrite(yellow, LOW);
+  digitalWrite(red, HIGH);
+  delay(5000);
+
+  // red -> yellow
+  digitalWrite(red, LOW);
+  digitalWrite(yellow, HIGH);
+  delay(2000);
+
+  // yellow -> green
+  digitalWrite(yellow, LOW);
+  digitalWrite(green, HIGH);
+}
+
+void loop() { 
+  bool b = digitalRead(button); //reads and stores current button state (b)
+
+  // trigger only on NEW press (LOW->HIGH)
+  if (b == HIGH && lastButton == LOW) {
+    runCycle(); //without this holding button would cause it to restart cycle
+  }
+
+  lastButton = b;
+  delay(20); // debounce (prevents one press being counted as multiple)
+}
